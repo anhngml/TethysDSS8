@@ -1,0 +1,22 @@
+/* Remove padding on bottom where app-actions section used to be */
+#app-content-wrapper #app-content {
+  padding-bottom: 0;
+}
+
+#app-content-wrapper #app-content #app-navigation {
+  background: #666363;
+}
+
+#app-content-wrapper #app-content #app-navigation .nav li.title {
+  color: white;
+}
+
+.monitoring_point_view {
+  z-index: 9999;
+  position: absolute;
+  /* left: 0; */
+  top: 0;
+  left: 40%;
+  -webkit-transform: translateX(-40%) translateY(40%);
+  transform: translateX(-40%) translateY(40%);
+}

@@ -1,0 +1,38 @@
+{% extends "dss_8/base.html" %}
+{% load tethys_gizmos %}
+
+{% load tethys_gizmos static %}
+
+{% block styles %}
+    {{ block.super }}
+    <link href="{% static 'dss_8/css/map.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+<div id="modal" class="modal fade">
+  <div id="dialog" class="modal-dialog" hx-target="this"></div>
+</div>
+
+{% block app_navigation_items %}
+  <li class="nav-item title">Danh sách trạm</li>
+  {% for point in monitoring_points %}
+    <li class="nav-item ">
+      <a class="nav-link {% if point.code == selected_point.code %}active{% endif %}" href="/apps/dss-8?tram={{point.code}}">{{point.name}}
+
+      </a>
+    </li>
+  {% endfor %}
+
+{% endblock %}
+
+{% block app_content %}
+{% gizmo dss8_map %}
+{% if selected_point is not None %}
+<div class="monitoring_point_view">
+  {% gizmo timeseries_plot %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% comment %} {% block app_actions %}
+{% gizmo add_dam_button %}
+{% endblock %} {% endcomment %}
