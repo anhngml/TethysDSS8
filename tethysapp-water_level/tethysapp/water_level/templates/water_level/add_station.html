@@ -1,0 +1,23 @@
+{% extends "water_level/base.html" %}
+{% load tethys_gizmos %}
+
+{% block app_content %}
+  <h1>Add Station</h1>
+  <form id="add-station-form" method="post">
+    {% comment %} {% csrf_token %}
+    <div class="form-group{% if location_error %} has-error{% endif %}">
+      <label class="control-label">Location</label>
+      {% gizmo location_input %}
+      {% if location_error %}<p class="help-block">{{ location_error }}</p>{% endif %}
+    </div>
+    {% gizmo name_input %}
+    {% gizmo owner_input %}
+    {% gizmo river_input %}
+    {% gizmo date_built_input %} {% endcomment %}
+  </form>
+{% endblock %}
+
+{% comment %} {% block app_actions %}
+  {% gizmo add_button %}
+  {% gizmo cancel_button %}
+{% endblock %} {% endcomment %}

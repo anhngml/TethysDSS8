@@ -1,0 +1,7 @@
+{% extends "water_level/base.html" %}
+{% load tethys_gizmos %}
+
+{% block app_content %}
+  <h1>Hydrology stations</h1>
+  {% gizmo stations_table %}
+{% endblock %}

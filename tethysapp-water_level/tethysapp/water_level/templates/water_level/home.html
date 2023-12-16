@@ -1,0 +1,21 @@
+{% extends "water_level/base.html" %}
+{% load tethys_gizmos %}
+{% load tethys_gizmos static %}
+{% block import_gizmos %}
+  {% import_gizmo_dependency plotly_view %}
+{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    <link href="{% static 'water_level/css/map.css' %}" rel="stylesheet"/>
+{% endblock %}
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'water_level/js/map.js' %}" type="text/javascript"></script>
+{% endblock %}
+
+{% block app_content %}
+  {% gizmo background_map %}
+  <div id="popup" class="ol-popup">
+  </div>
+{% endblock %}
