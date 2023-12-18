@@ -12,62 +12,6 @@ def home(request):
     """
     Controller for the app home page.
     """
-    # save_button = Button(
-    #     display_text='',
-    #     name='save-button',
-    #     icon='save',
-    #     style='success',
-    #     attributes={
-    #         'data-bs-toggle':'tooltip',
-    #         'data-bs-placement':'top',
-    #         'title':'Save'
-    #     }
-    # )
-
-    # edit_button = Button(
-    #     display_text='',
-    #     name='edit-button',
-    #     icon='pen',
-    #     style='warning',
-    #     attributes={
-    #         'data-bs-toggle':'tooltip',
-    #         'data-bs-placement':'top',
-    #         'title':'Edit'
-    #     }
-    # )
-
-    # remove_button = Button(
-    #     display_text='',
-    #     name='remove-button',
-    #     icon='trash',
-    #     style='danger',
-    #     attributes={
-    #         'data-bs-toggle':'tooltip',
-    #         'data-bs-placement':'top',
-    #         'title':'Remove'
-    #     }
-    # )
-
-    # previous_button = Button(
-    #     display_text='Previous',
-    #     name='previous-button',
-    #     attributes={
-    #         'data-bs-toggle':'tooltip',
-    #         'data-bs-placement':'top',
-    #         'title':'Previous'
-    #     }
-    # )
-
-    # next_button = Button(
-    #     display_text='Next',
-    #     name='next-button',
-    #     attributes={
-    #         'data-bs-toggle':'tooltip',
-    #         'data-bs-placement':'top',
-    #         'title':'Next'
-    #     }
-    # )
-
     # Get list of dams and create dams MVLayer:
     stations = get_all_stations()
     features = []
@@ -75,6 +19,8 @@ def home(request):
     lng_list = []
 
     for station in stations:
+        if station.latitude is None or station.longitude is None:
+            continue
         lat_list.append(station.latitude)
         lng_list.append(station.longitude)
 

@@ -5,6 +5,7 @@ from .app import WaterLevel as app
 from .model import Hydrograph, HydrographPoint
 
 from sqlalchemy import asc, desc
+from datetime import datetime
 
 
 def create_hydrograph(hydrograph_id, height='520px', width='100%'):
@@ -21,7 +22,16 @@ def create_hydrograph(hydrograph_id, height='520px', width='100%'):
     level_pred = []
 
     points = hydrograph.points #.order_by(desc(HydrographPoint.time))
+    points_count = len(points)
+    points = points if points_count <= 20 else points[-20:-1]
+    # print(points)
+    if points_count < 1:
+        session.close()
+        return None
+    
     last_point = points[-1]
+    prv_last_point = points[-2]
+    interval = last_point.time - prv_last_point.time
 
     for hydro_point in points:
         time.append(hydro_point.time)
@@ -34,9 +44,12 @@ def create_hydrograph(hydrograph_id, height='520px', width='100%'):
 
     for pred in level_pred:
         time.append(future_time)
-        future_time += 1
+        future_time += interval
     # level_pred = level
     # Build up Plotly plot
+    time = list(map(lambda x: datetime.fromtimestamp(x), time))
+
+
     hydrograph_go = go.Scatter(
         x=time,
         y=level,
