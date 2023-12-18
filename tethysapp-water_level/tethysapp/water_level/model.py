@@ -2,10 +2,13 @@ import json
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, Float, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from .app import WaterLevel as app
 
 Base = declarative_base()
+
+db_posfix = 'primary_db_v2'
 
 
 # SQLAlchemy ORM definition for the dams table
@@ -52,8 +55,8 @@ class HydrographPoint(Base):
     id = Column(Integer, primary_key=True)
     hydrograph_id = Column(ForeignKey('hydrographs.id'))
     time = Column(Integer)  #: hours
-    flow = Column(Float)  #: cfs
-    pred_flow = Column(Float)
+    level = Column(Float)  #: cfs
+    level_pred = Column(ARRAY(Float))
 
     # Relationships
     hydrograph = relationship('Hydrograph', back_populates='points')
@@ -73,7 +76,7 @@ def add_new_station(uuid, lat, long, name, pred_model_url):
     )
 
     # Get connection/session to database
-    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    Session = app.get_persistent_store_database(db_posfix, as_sessionmaker=True)
     session = Session()
 
     # Add the new dam record to the session
@@ -89,7 +92,7 @@ def get_all_stations():
     Get all persisted stations.
     """
     # Get connection/session to database
-    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    Session = app.get_persistent_store_database(db_posfix, as_sessionmaker=True)
     session = Session()
 
     # Query for all station records
@@ -113,13 +116,13 @@ def assign_hydrograph_to_station(station_id, hydrograph_vals):
 
             try:
                 time = int(sline[0])
-                flow = float(sline[1])
-                hydro_points.append(HydrographPoint(time=time, flow=flow))
+                level = float(sline[1])
+                hydro_points.append(HydrographPoint(time=time, level=level))
             except ValueError:
                 continue
 
         if len(hydro_points) > 0:
-            Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+            Session = app.get_persistent_store_database(db_posfix, as_sessionmaker=True)
             session = Session()
 
             # Get dam object
@@ -156,7 +159,7 @@ def get_hydrograph(station_id):
     """
     Get hydrograph id from dam id.
     """
-    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    Session = app.get_persistent_store_database(db_posfix, as_sessionmaker=True)
     session = Session()
 
     # Query if hydrograph exists for dam

@@ -11,9 +11,11 @@ class WaterLevel(TethysAppBase):
     description = 'Water level prediction and viz'
     package = 'water_level'  # WARNING: Do not change this value
     index = 'home'
-    icon = f'{package}/images/icon.gif'
+    icon = f'{package}/images/icon.png'
     root_url = 'water-level'
     color = '#524745'
+    # color = '#ffffff'
+    
     tags = 'Hydrology'
     enable_feedback = False
     feedback_emails = []
@@ -48,7 +50,7 @@ class WaterLevel(TethysAppBase):
         """
         ps_settings = (
             PersistentStoreDatabaseSetting(
-                name='primary_db',
+                name='primary_db_v2',
                 description='primary database',
                 initializer='water_level.model.init_primary_db',
                 required=True

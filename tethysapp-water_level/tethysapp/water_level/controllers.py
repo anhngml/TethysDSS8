@@ -218,7 +218,7 @@ def hydrograph_ajax(request, station_id):
     Controller for the Hydrograph Page.
     """
     # Get stations from database
-    Session = app.get_persistent_store_database('primary_db', as_sessionmaker=True)
+    Session = app.get_persistent_store_database('primary_db_v2', as_sessionmaker=True)
     session = Session()
     station = session.query(Station).get(int(station_id))
 
