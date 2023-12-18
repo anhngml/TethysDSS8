@@ -11,6 +11,7 @@ def home(request):
     Controller for the app home page.
     """
     data_file_error = ''
+    ok_button_enable = True
     if request.POST and 'ok-button' in request.POST:
         # Get Values
         has_errors = False
@@ -26,8 +27,9 @@ def home(request):
 
         if not has_errors:
             # Process file here
+            ok_button_enable = False
             success = process_data(data_file[0])
-
+            ok_button_enable = True
             # Provide feedback to user
             if success:
                 messages.info(request, 'Successfully.')
@@ -136,6 +138,7 @@ def home(request):
         name='ok-button',
         # icon='plus-square',
         style='btn btn-primary',
+        disabled= not ok_button_enable,
         attributes={'form': 'add-data-form'},
         submit=True
     )

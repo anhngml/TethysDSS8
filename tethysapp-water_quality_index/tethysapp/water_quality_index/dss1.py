@@ -1,10 +1,17 @@
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 pd.options.mode.copy_on_write = True
+from datetime import timedelta
 
 # Calculate DSS1
 def dss1_final (input, fromdate, todate, status_callback):
     df = pd.read_csv(input,skiprows=[1],encoding = "UTF-8") # depend on exisitng dss1.csv file   
+
+    if fromdate is None:
+        df["Date"] =  pd.to_datetime(df["Date"]) # convert Date field to  
+        fromdate = (pd.to_datetime('today')- timedelta(days=1000))
+        todate = (pd.to_datetime('today'))
+
     # df["Date"] =  pd.to_datetime(df["Date"],dayfirst=True).dt.date    
     df['Date'] = pd.to_datetime(df.Date, format='%d/%m/%Y')
     try:
