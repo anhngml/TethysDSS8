@@ -234,7 +234,7 @@ def export_result(request, station_id):
                 "data2product", str(station.name)+'_'+'water_level'+'.csv', str(station.name)+'_'+'water_level'+'.csv',
             )
             # response =  client.get_object(bucket_name=a.bucket_name,object_name=a.object_name)
-            path_url = "https://storage.mkdc.vn/"+"data2product/"+ str(station.name)+'_'+'water_level'+'.csv', str(station.name)+'_'+'water_level'+'.csv'
+            path_url = "https://storage.mkdc.vn/"+"data2product/"+ str(station.name)+'_'+'water_level'+'.csv'
 
             url = "https://opendata.mkdc.com.vn/api/3/action/package_create"
             headers = {
