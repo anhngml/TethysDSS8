@@ -2,3 +2,5 @@ dam_inventory-advanced-solution
 plot-at-location
 tethysapp-layout_showcase
 visualize-leaflet
+build
+*.csv

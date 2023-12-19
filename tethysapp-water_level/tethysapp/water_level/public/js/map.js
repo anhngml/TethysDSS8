@@ -58,7 +58,24 @@ $(function () {
                     return false;
                 };
                 download.onclick = function () {
-                    alert('Comming soon')
+                    $.ajax({
+                        type: 'GET',
+                          dataType:"json",
+                        url: '/apps/water-level/export_result/' + selected_feature.get('id'),
+                        // headers:{         
+                        //     'Authorization' : 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBWZXIiOiIwLjAuMCIsImV4cCI6NDcyNjM4OTEyMiwibG9jYWxlIjoiIiwibWFzdGVyVmVyIjoiIiwicGxhdGZvcm0iOiIiLCJwbGF0Zm9ybVZlciI6IiIsInVzZXJJZCI6IiJ9.QIZbmB5_9Xlap_gDhjETfMI6EAmR15yBtIQkWFWJkrg',
+                            
+                        // },
+                        success: function (data, status, xhr) {
+                          console.log('data', data);
+                          alert('Export successfuly.')
+                        },
+                        error: function (error) {
+                            alert('error; ' + eval(error));
+                        }
+                      });
+
+                    alert('Processing ...')
                     return false;
                 };
             }, 500);
