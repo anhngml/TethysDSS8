@@ -14,6 +14,7 @@ from django.http import HttpResponseNotAllowed, JsonResponse
 import requests
 import string
 import re
+import json
 
 def sanitize_string(input_string):
     # Chỉ giữ lại chữ cái thường, số, - và _
@@ -281,8 +282,10 @@ def export_result(request, station_id):
             json_response.update({
                 'success': True
             })
-        except Exception:
+        except Exception as e:
+            print(str(e))
             json_response['error'] = f'An unexpected error has occurred. Please try again.'
+            json_response['data'] = str(e)
 
     session.close()
     return JsonResponse(json_response)

@@ -180,7 +180,7 @@ def init_primary_db(engine, first_time):
     Base.metadata.create_all(engine)
 
     # Add data
-    if first_time:
+    if first_time and False:
         # Make session
         Session = sessionmaker(bind=engine)
         session = Session()
