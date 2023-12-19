@@ -129,7 +129,7 @@ def home(request):
         layers=[stations_layer],
         view=view_options,
         # basemap=['OpenStreetMap'],
-        basemap=[{'XYZ': {'url': 'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', 'control_label': 'Wikimedia'}}]
+        basemap=[{'XYZ': {'url': 'https://maps.becagis.vn/tiles/basemap/light/{z}/{x}/{y}.png', 'control_label': 'becagis'}}]
         # https://maps.becagis.vn/tiles/basemap/light/{z}/{x}/{y}.png
     )
 
