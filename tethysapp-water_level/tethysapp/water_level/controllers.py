@@ -105,7 +105,8 @@ def home(request):
         width='100%',
         layers=[stations_layer],
         view=view_options,
-        basemap=['OpenStreetMap'],
+        basemap=[{'XYZ': {'url': 'https://maps.becagis.vn/tiles/basemap/light/{z}/{x}/{y}.png', 'control_label': 'becagis'}}]
+        # basemap=['OpenStreetMap'],
     )
 
     context = {
