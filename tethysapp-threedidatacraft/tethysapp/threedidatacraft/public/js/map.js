@@ -23,10 +23,11 @@ $(function () {
 
             // Get coordinates of the point to set position of the popup
             var coordinates = selected_feature.getGeometry().getCoordinates();
+            console.log(selected_feature)
 
             var popup_content = 
                 '<a href="#" id="popup-closer" class="ol-popup-closer"></a>' +
-                '<a href="#" id="popup-export" class="ol-popup-export"></a>' +
+                // '<a href="#" id="popup-export" class="ol-popup-export"></a>' +
                 '<div class="station-popup">' +
                 '<div class="popup-content">' +
                 '<h5>' + selected_feature.get('name') + '</h5>' +
@@ -34,7 +35,11 @@ $(function () {
                 '<span>' + coordinates[0] + ', ' + coordinates[1] + '</span>' +
                 // '<h6>latitude:</h6>' +
                 // '<span>' + coordinates[0] + '</span>' +
-                '<div id="plot-content"></div>' +
+                // '<div id="plot-content"></div>' +
+                '<h6>WQI:</h6>' +
+                '<h5 style="color:' + selected_feature.get('WQI_Color') + ';">' + selected_feature.get('WQI') + '</h5>' +
+                '<h6>WQI Level:</h6>' +
+                '<h5 style="color:' + selected_feature.get('WQI_Color') + ';">' + selected_feature.get('WQI_Level') + '</h5>' +
                 '</div>' +
                 '</div>';
 
@@ -48,36 +53,17 @@ $(function () {
                 popup_element.innerHTML = popup_content;
                 $(popup_element).popover('show');
 
-                // Load hydrograph dynamically
-                $('#plot-content').load('/apps/water-level/hydrographs/' + selected_feature.get('id') + '/ajax/');
                 const closer = document.getElementById('popup-closer');
-                const download = document.getElementById('popup-export');
+                // const download = document.getElementById('popup-export');
                 closer.onclick = function () {
                     popup.setPosition(undefined);
                     closer.blur();
                     return false;
                 };
-                download.onclick = function () {
-                    $.ajax({
-                        type: 'GET',
-                          dataType:"json",
-                        url: '/apps/water-level/export_result/' + selected_feature.get('id'),
-                        // headers:{         
-                        //     'Authorization' : 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBWZXIiOiIwLjAuMCIsImV4cCI6NDcyNjM4OTEyMiwibG9jYWxlIjoiIiwibWFzdGVyVmVyIjoiIiwicGxhdGZvcm0iOiIiLCJwbGF0Zm9ybVZlciI6IiIsInVzZXJJZCI6IiJ9.QIZbmB5_9Xlap_gDhjETfMI6EAmR15yBtIQkWFWJkrg',
-                            
-                        // },
-                        success: function (data, status, xhr) {
-                          console.log('data', data);
-                          alert('Export successfuly.')
-                        },
-                        error: function (error) {
-                            alert('error; ' + eval(error));
-                        }
-                      });
-
-                    alert('Processing ...')
-                    return false;
-                };
+                // download.onclick = function () {
+                //     alert('Comming soon')
+                //     return false;
+                // };
             }, 500);
 
         } else {

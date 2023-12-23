@@ -6,6 +6,20 @@ from django.shortcuts import render, reverse, redirect
 from .model import Station, add_new_station, get_all_stations, assign_hydrograph_to_station, get_hydrograph
 from .app import WaterLevel as app
 from .helpers import create_hydrograph
+from minio import Minio
+from minio.error import S3Error
+from .model import Hydrograph, HydrographPoint
+import pandas as pd
+from django.http import HttpResponseNotAllowed, JsonResponse
+import requests
+import string
+import re
+import json
+
+def sanitize_string(input_string):
+    # Chỉ giữ lại chữ cái thường, số, - và _
+    sanitized_string = re.sub(r'[^a-z0-9\-_]', '', input_string)
+    return sanitized_string
 
 @controller
 def home(request):
@@ -180,3 +194,98 @@ def hydrograph_ajax(request, station_id):
 
     session.close()
     return render(request, 'water_level/hydrograph_ajax.html', context)
+## Doan put csv to minio
+@controller(url='export_result/{station_id}')
+def export_result(request, station_id):
+    """
+    """
+    messages.info(request, 'Processing ...')
+    # Get stations from database
+    Session = app.get_persistent_store_database('primary_db_v2', as_sessionmaker=True)
+    session = Session()
+    station = session.query(Station).get(int(station_id))
+
+    json_response = {'success': False}
+    link_url = ''
+    if station.hydrograph:
+        try:
+            hydrograph = session.query(Hydrograph).get(int(station.hydrograph.id))
+            points = hydrograph.points #.order_by(desc(HydrographPoint.time))
+            points_count = len(points)
+            points = points if points_count <= 20 else points[-20:-1]
+    
+            time = []
+            level = []
+            level_pred = []
+
+            for hydro_point in points:
+                time.append(hydro_point.time)
+                level.append(hydro_point.level)
+                level_pred.append(hydro_point.level_pred)
+            df = pd.DataFrame({"time":time,"level":level,"level_pred":level_pred })
+            df.to_csv(str(station.name)+'_'+'water_level'+'.csv', index=False) 
+
+            client = Minio(
+            "storage.mkdc.vn",
+            access_key="YvaFGyxc4UYfG9er",
+            secret_key="eoAiwmabGvTgn9Jts7htdrfP49UPpELq",
+            )
+            a = client.fput_object(
+                "data2product", str(station.name)+'_'+'water_level'+'.csv', str(station.name)+'_'+'water_level'+'.csv',
+            )
+            # response =  client.get_object(bucket_name=a.bucket_name,object_name=a.object_name)
+            path_url = "https://storage.mkdc.vn/"+"data2product/"+ str(station.name)+'_'+'water_level'+'.csv'
+
+            url = "https://opendata.mkdc.com.vn/api/3/action/package_create"
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJ4VDktX3hlR1lxY2lMbUszaWtENzd3SVZTUzBYdjJtMnV4c1k3b3J4aDdjIiwiaWF0IjoxNzAyNjU1MjA4fQ.YWi2VGUl0IuS2ByjX1sZwEG46w0BUTnC1oKfAhdHqmY'
+            }
+            request_body = {
+                "name": sanitize_string(str(a.object_name)),
+                "title": str(a.object_name),
+                "notes": "CSV Describe",
+                "owner_org": "39f7a753-904d-4d1d-9fcc-583382720332",
+                "tags": [{"name": "csv"}],
+                "extras": [
+                    {
+                        "key": "mkdc_portal_display",
+                        "value": "true"
+                    }
+                ],
+                "resources": [
+                    {
+                        "url": path_url,
+                        "format": "csv",
+                        "name": sanitize_string(str(a.object_name)),
+                        "hash": "e0d123e5f316bef78bfdf5a008837577",
+                        "size": "1024",
+                        "last_modified": "2023-08-16T08:50:11.141400",
+                        "created": "2023-08-16T08:50:11.141400"
+                    }
+                ]
+            }
+            response = requests.post(url, headers=headers, json=request_body)
+
+            # # Kiểm tra trạng thái và in ra kết quả
+            # if response.status_code == 200:
+            #     print("Request thành công!")
+            #     print("Response:")
+            #     print(response.json())
+            # else:
+            #     print(f"Request thất bại với mã lỗi {response.status_code}")
+            #     print("Response:")
+            #     print(response.text)
+
+
+
+            json_response.update({
+                'success': True
+            })
+        except Exception as e:
+            print(str(e))
+            json_response['error'] = f'An unexpected error has occurred. Please try again.'
+            json_response['data'] = str(e)
+
+    session.close()
+    return JsonResponse(json_response)
