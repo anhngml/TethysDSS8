@@ -71,6 +71,7 @@ def home(request):
     stations = load_result()
 
     for station in stations:
+        # print(station.latitude, station.longitude)
         if station.latitude is None or station.longitude is None:
             continue
         lat_list.append(station.latitude)
@@ -80,6 +81,7 @@ def home(request):
             'type': 'Feature',
             'geometry': {
                 'type': 'Point',
+                # 'coordinates': [station.latitude, station.longitude],
                 'coordinates': [station.longitude, station.latitude],
 
             },
@@ -96,7 +98,8 @@ def home(request):
         'crs': {
             'type': 'name',
             'properties': {
-                'name': 'EPSG:32648'
+                # 'name': 'EPSG:4326'
+                'name': 'EPSG:4326'
             }
         },
         'features': features
@@ -104,7 +107,7 @@ def home(request):
 
     style = {'ol.style.Style': {
         'image': {'ol.style.Circle': {
-            'radius': 10,
+            'radius': 5,
             'fill': {'ol.style.Fill': {
                 'color':  '#d84e1f'
             }},
@@ -131,11 +134,11 @@ def home(request):
     )
 
     view_options = MVView(
-        projection='EPSG:32648',
+        # projection='epsg:4326',
         # projection='EPSG:4326',
         center=view_center,
-        zoom=8,
-        maxZoom=18,
+        zoom=13,
+        maxZoom=28,
         minZoom=2
     )
 

@@ -7,6 +7,7 @@ from datetime import datetime
 import numpy as np
 import netCDF4 as nc
 from netCDF4 import Dataset
+from pyproj import Proj, transform
 
 def process_boundary_data(data_file,start_datetime=None,end_datetime=None):
   
@@ -83,13 +84,21 @@ def process_netcdf_data(data_file):
 def load_result():
   stations = []
   result_file = 'result.csv'
+  crs_init = Proj('epsg:32648')
+  crs_wgs84 = Proj('epsg:4326')
+
   if os.path.isfile(result_file):
     df = pd.read_csv('result.csv',skiprows=[1])
     for index, row in df.iterrows():
       station = lambda: None
       station.id = row['id']
-      station.latitude = row['y']
-      station.longitude = row['x']
+      x, y = row['x'], row['y']
+      lat, lon = transform(crs_init, crs_wgs84, x, y)
+      # if index < 1:
+      #   print('lon, lat:', lon, lat)
+      station.latitude = lat # round(lat, 6)
+      station.longitude = lon # round(lon, 6)
+
       station.waterlevel = row['WaterLevel']
       stations.append(station)
   return stations
