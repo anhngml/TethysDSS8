@@ -1,6 +1,5 @@
 from tethys_sdk.base import TethysAppBase
-from tethys_sdk.app_settings import CustomSetting, PersistentStoreDatabaseSetting,JSONCustomSetting
-
+from tethys_sdk.app_settings import CustomSetting, PersistentStoreDatabaseSetting,JSONCustomSetting, SpatialDatasetServiceSetting
 
 class Threedidatacraft(TethysAppBase):
     """
@@ -17,6 +16,22 @@ class Threedidatacraft(TethysAppBase):
     tags = ''
     enable_feedback = False
     feedback_emails = []
+
+    THREDDS_SERVICE_NAME = 'thredds_service'
+
+    def spatial_dataset_service_settings(self):
+        """
+        Example spatial_dataset_service_settings method.
+        """
+        sds_settings = (
+            SpatialDatasetServiceSetting(
+                name=self.THREDDS_SERVICE_NAME,
+                description='THREDDS service for app to use',
+                engine=SpatialDatasetServiceSetting.THREDDS,
+                required=True,
+            ),
+        )
+        return sds_settings
 
     def custom_settings(self):
         custom_settings = (
@@ -41,7 +56,14 @@ class Threedidatacraft(TethysAppBase):
                 default={"1": {"sheet_name":"Waterlevel","time_column":1,"station_name_row":2,"first_data_row":4},
                          "2": {"sheet_name":"Velocity","time_column":1,"station_name_row":1,"first_data_row":3},
                          "3": {"sheet_name":"Discharge","time_column":1,"station_name_row":1,"first_data_row":3}}
-            )
+            ),
+            CustomSetting(
+                name='thredds_data_root',
+                type=CustomSetting.TYPE_STRING,
+                description='Đường dẫn thư mục lưu dữ liệu của THREDDS.',
+                required=True,
+                default="E:/Tethys/thredds/public/mkdc"
+            ),
         )
 
         return custom_settings

@@ -12,8 +12,11 @@
 {% endblock %}
 
 {% block header_buttons %}
-  <div class="header-button glyphicon-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upload data file">
-    <a data-bs-toggle="modal" data-bs-target="#help-modal"><i class="bi bi-cloud-upload"></i></a>
+  <div class="header-button glyphicon-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Chuyển đổi biên số liệu">
+    <a data-bs-toggle="modal" data-bs-target="#help-modal"><i class="bi bi-bounding-box-circles"></i></a>
+  </div>
+  <div class="header-button glyphicon-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Biểu diễn dữ liệu">
+    <a data-bs-toggle="modal" data-bs-target="#netcdf-modal"><i class="bi bi-eye"></i></a>
   </div>
 {% endblock %}
 
@@ -29,32 +32,58 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="help-modal-label">Data file upload</h5>
+          <h5 class="modal-title" id="help-modal-label">Chuyển đổi biên số liệu</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="add-data-form" method="post" enctype="multipart/form-data">
+          <form id="boundary-data-form" method="post" enctype="multipart/form-data">
             <div class="form-group{% if data_file_error %} has-error{% endif %}">
               {% csrf_token %}
-              <label class="control-label">Data File</label>
+              <label class="control-label">Tệp dữ liệu</label>
               <input type="file" name="data-file">
               {% if data_file_error %}<p class="help-block">{{ data_file_error }}</p>{% endif %}
             </div>
             <div>
-              <label for="start_datetime">from:</label><br>
+              <label for="start_datetime">Thời gian từ:</label><br>
               <input type="datetime-local" id="start_datetime" name="start_datetime" value="2011-04-01T15:45">
             </div>
 
             <div>
-              <label for="end_datetime">to:</label><br>
+              <label for="end_datetime">đến:</label><br>
               <input type="datetime-local" id="end_datetime" name="end_datetime" value="2011-04-02T15:45">
             </div>
             
           </form>
         </div>
         <div class="modal-footer">
-          {% gizmo ok_button %}
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          {% gizmo boundary_extract_button %}
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          {% comment %} <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button> {% endcomment %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="netcdf-modal" tabindex="-1" role="dialog" aria-labelledby="help-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="help-modal-label">Tải lên tệp NetCDF</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="upload-netcdf-data-form" method="post" enctype="multipart/form-data">
+            <div class="form-group{% if data_file_error %} has-error{% endif %}">
+              {% csrf_token %}
+              <label class="control-label">Tệp dữ liệu</label>
+              <input type="file" name="data-file">
+              {% if data_file_error %}<p class="help-block">{{ data_file_error }}</p>{% endif %}
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          {% gizmo upload_netcdf_button %}
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
           {% comment %} <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button> {% endcomment %}
         </div>
       </div>

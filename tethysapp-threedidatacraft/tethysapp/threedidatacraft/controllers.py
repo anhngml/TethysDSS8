@@ -1,9 +1,10 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from tethys_sdk.routing import controller
 from tethys_sdk.gizmos import Button, MapView, MVView, MVLayer
 from django.contrib import messages
 from django.shortcuts import render, reverse, redirect
-from .model import process_data, load_result
+from .model import process_boundary_data, process_netcdf_data, load_result
 
 @controller
 def home(request):
@@ -12,37 +13,55 @@ def home(request):
     """
     data_file_error = ''
     ok_button_enable = True
-    if request.POST and 'ok-button' in request.POST:
-        # Get Values
-        has_errors = False
-        # print(request.POST)
-
-        # Get File
-        if request.FILES and 'data-file' in request.FILES:
-            # Get a list of the files
-            data_file = request.FILES.getlist('data-file')
-
-        if not data_file and len(data_file) > 0:
-            has_errors = True
-            data_file_error = 'Data File is Required.'
-
-        if not has_errors:
-            # Process file here
+    if request.POST:
+        if 'boundary-extract-button' in request.POST:
+            # Get Values
+            has_errors = False
             ok_button_enable = False
-            start_datetime = request.POST['start_datetime'] if 'start_datetime' in request.POST else None
-            end_datetime = request.POST['end_datetime'] if 'end_datetime' in request.POST else None
 
-            success = process_data(data_file[0],start_datetime,end_datetime)
-    
-            ok_button_enable = True
-            # Provide feedback to user
-            if success:
-                messages.info(request, 'Successfully.')
-            else:
-                messages.info(request, 'Unable to process data. Please try again.')
-            return redirect(reverse('threedidatacraft:home'))
+            # Get File
+            if request.FILES and 'data-file' in request.FILES:
+                # Get a list of the files
+                data_file = request.FILES.getlist('data-file')
 
-        messages.error(request, "Please fix errors.")
+            if not data_file and len(data_file) > 0:
+                has_errors = True
+                data_file_error = 'Data File is Required.'
+
+            if not has_errors:
+                # Process file here
+                try:
+                    start_datetime = request.POST['start_datetime'] if 'start_datetime' in request.POST else None
+                    end_datetime = request.POST['end_datetime'] if 'end_datetime' in request.POST else None
+
+                    success, result = process_boundary_data(data_file[0],start_datetime,end_datetime)
+                    
+                    if success:
+                        response = HttpResponse(result, content_type='text/csv')
+                        response['Content-Disposition'] = 'attachment; filename=result.csv'
+                        return response
+                    else:
+                        messages.info(request, 'Unable to process data. Please try again.')
+                        return redirect(reverse('threedidatacraft:home'))
+                except:
+                    messages.error(request, "Unable to process data. Please try again.")
+
+        elif 'upload-netcdf-button' in request.POST:
+            has_errors = False
+            # Get File
+            if request.FILES and 'data-file' in request.FILES:
+                # Get a list of the files
+                data_file = request.FILES.getlist('data-file')
+
+            if not data_file and len(data_file) > 0:
+                has_errors = True
+                data_file_error = 'Data File is Required.'
+
+            if not has_errors:
+                process_netcdf_data(data_file[0])
+                # Process file here
+
+                pass
 
     stations = []
     features = []
@@ -66,16 +85,7 @@ def home(request):
             },
             'properties': {
                 'id': station.id,
-                'name': station.id,
-                'WQI_I': station.WQI_I,
-                'WQI_II': station.WQI_II,
-                'WQI_III': station.WQI_III,
-                'WQI_IV': station.WQI_IV,
-                'WQI_V': station.WQI_V,
-                'WQI': station.WQI,
-                'WQI_Level': station.WQI_Level,
-                'WQI_Color': station.WQI_Color,
-                # WQI_I,WQI_II,WQI_III,WQI_IV,WQI_V,WQI
+                'waterlevel': station.waterlevel
             }
         }
         features.append(station_feature)
@@ -86,7 +96,7 @@ def home(request):
         'crs': {
             'type': 'name',
             'properties': {
-                'name': 'EPSG:4326'
+                'name': 'EPSG:32648'
             }
         },
         'features': features
@@ -121,7 +131,8 @@ def home(request):
     )
 
     view_options = MVView(
-        projection='EPSG:4326',
+        projection='EPSG:32648',
+        # projection='EPSG:4326',
         center=view_center,
         zoom=8,
         maxZoom=18,
@@ -138,13 +149,23 @@ def home(request):
         # https://maps.becagis.vn/tiles/basemap/light/{z}/{x}/{y}.png
     )
 
-    ok_button = Button(
-        display_text='Upload',
-        name='ok-button',
+    boundary_extract_button = Button(
+        display_text='Xử lý',
+        name='boundary-extract-button',
         # icon='plus-square',
         style='btn btn-primary',
         disabled= not ok_button_enable,
-        attributes={'form': 'add-data-form'},
+        attributes={'form': 'boundary-data-form'},
+        submit=True
+    )
+
+    upload_netcdf_button = Button(
+        display_text='Tải lên',
+        name='upload-netcdf-button',
+        # icon='plus-square',
+        style='btn btn-primary',
+        disabled= not ok_button_enable,
+        attributes={'form': 'upload-netcdf-data-form'},
         submit=True
     )
 
@@ -156,7 +177,8 @@ def home(request):
 
     context = {
         'wqi_map': wqi_map,
-        'ok_button': ok_button,
+        'boundary_extract_button': boundary_extract_button,
+        'upload_netcdf_button': upload_netcdf_button,
         'cancel_button': cancel_button,
         'data_file_error': data_file_error,
     }

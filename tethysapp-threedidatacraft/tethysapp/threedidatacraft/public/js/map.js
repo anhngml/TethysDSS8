@@ -30,16 +30,14 @@ $(function () {
                 // '<a href="#" id="popup-export" class="ol-popup-export"></a>' +
                 '<div class="station-popup">' +
                 '<div class="popup-content">' +
-                '<h5>' + selected_feature.get('name') + '</h5>' +
+                '<h5>' + selected_feature.get('id') + '</h5>' +
                 '<h6>Location:</h6>' +
                 '<span>' + coordinates[0] + ', ' + coordinates[1] + '</span>' +
                 // '<h6>latitude:</h6>' +
                 // '<span>' + coordinates[0] + '</span>' +
                 // '<div id="plot-content"></div>' +
-                '<h6>WQI:</h6>' +
-                '<h5 style="color:' + selected_feature.get('WQI_Color') + ';">' + selected_feature.get('WQI') + '</h5>' +
-                '<h6>WQI Level:</h6>' +
-                '<h5 style="color:' + selected_feature.get('WQI_Color') + ';">' + selected_feature.get('WQI_Level') + '</h5>' +
+                '<h6>Waterlevel</h6>' +
+                '<h5>' + selected_feature.get('waterlevel') + '</h5>' +
                 '</div>' +
                 '</div>';
 
