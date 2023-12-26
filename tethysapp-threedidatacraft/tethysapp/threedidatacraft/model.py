@@ -69,9 +69,9 @@ def process_boundary_data(data_file,start_datetime=None,end_datetime=None):
   return True, result.to_csv(index=False)
 
 def process_netcdf_data(data_file):
-  thredds_data_root = app.get_custom_setting(name="thredds_data_root")
-  saved_file = FileSystemStorage(location=thredds_data_root).save(data_file.name, data_file)
-  saved_file = FileSystemStorage(location=thredds_data_root).path(saved_file)
+  data_folder = app.get_custom_setting(name="data_folder")
+  saved_file = FileSystemStorage(location=data_folder).save(data_file.name, data_file)
+  saved_file = FileSystemStorage(location=data_folder).path(saved_file)
   ds = nc.Dataset(saved_file)
   
   xcc2d = ds["Mesh2DFace_xcc"][:]
@@ -94,25 +94,28 @@ def process_netcdf_data(data_file):
     df.at[index, 'y'] = lon
     df.at[index, 'time'] = times32
 
-  df.to_csv('result.csv', index=False)
+  df.to_csv(data_folder+'/result.csv', index=False)
 
 def load_result():
   stations = []
-  result_file = 'result.csv'
+  data_folder = app.get_custom_setting(name="data_folder")
+  result_file = data_folder+'/result.csv'
   # crs_init = Proj('epsg:32648')
   # crs_wgs84 = Proj('epsg:4326')
-
-  if os.path.isfile(result_file):
-    df = pd.read_csv('result.csv',skiprows=[1])
-    for index, row in df.iterrows():
-      station = lambda: None
-      station.id = row['id']
-      x, y = row['x'], row['y']
-      # lat, lon = transform(crs_init, crs_wgs84, x, y)
-      station.latitude = x # round(lat, 6)
-      station.longitude = y # round(lon, 6)
-      station.time = row['time']
-      station.waterlevel = row['WaterLevel']
-      
-      stations.append(station)
+  try:
+    if os.path.isfile(result_file):
+      df = pd.read_csv('result.csv',skiprows=[1])
+      for index, row in df.iterrows():
+        station = lambda: None
+        station.id = row['id']
+        x, y = row['x'], row['y']
+        # lat, lon = transform(crs_init, crs_wgs84, x, y)
+        station.latitude = x # round(lat, 6)
+        station.longitude = y # round(lon, 6)
+        station.time = row['time']
+        station.waterlevel = row['WaterLevel']
+        
+        stations.append(station)
+  except:
+    print('====')
   return stations

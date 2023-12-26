@@ -58,9 +58,9 @@ class Threedidatacraft(TethysAppBase):
                          "3": {"sheet_name":"Discharge","time_column":1,"station_name_row":1,"first_data_row":3}}
             ),
             CustomSetting(
-                name='thredds_data_root',
+                name='data_folder',
                 type=CustomSetting.TYPE_STRING,
-                description='Đường dẫn thư mục lưu dữ liệu của THREDDS.',
+                description='Đường dẫn thư mục lưu dữ liệu.',
                 required=True,
                 default="E:/Tethys/thredds/public/mkdc"
             ),
