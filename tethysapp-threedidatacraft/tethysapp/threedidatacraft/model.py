@@ -104,7 +104,7 @@ def load_result():
   # crs_wgs84 = Proj('epsg:4326')
   try:
     if os.path.isfile(result_file):
-      df = pd.read_csv('result.csv',skiprows=[1])
+      df = pd.read_csv(result_file,skiprows=[1])
       for index, row in df.iterrows():
         station = lambda: None
         station.id = row['id']
