@@ -19,19 +19,19 @@ class Threedidatacraft(TethysAppBase):
 
     THREDDS_SERVICE_NAME = 'thredds_service'
 
-    def spatial_dataset_service_settings(self):
-        """
-        Example spatial_dataset_service_settings method.
-        """
-        sds_settings = (
-            SpatialDatasetServiceSetting(
-                name=self.THREDDS_SERVICE_NAME,
-                description='THREDDS service for app to use',
-                engine=SpatialDatasetServiceSetting.THREDDS,
-                required=True,
-            ),
-        )
-        return sds_settings
+    # def spatial_dataset_service_settings(self):
+    #     """
+    #     Example spatial_dataset_service_settings method.
+    #     """
+    #     sds_settings = (
+    #         SpatialDatasetServiceSetting(
+    #             name=self.THREDDS_SERVICE_NAME,
+    #             description='THREDDS service for app to use',
+    #             engine=SpatialDatasetServiceSetting.THREDDS,
+    #             required=True,
+    #         ),
+    #     )
+    #     return sds_settings
 
     def custom_settings(self):
         custom_settings = (
