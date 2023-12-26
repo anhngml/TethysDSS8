@@ -27,17 +27,13 @@ $(function () {
 
             var popup_content = 
                 '<a href="#" id="popup-closer" class="ol-popup-closer"></a>' +
-                // '<a href="#" id="popup-export" class="ol-popup-export"></a>' +
                 '<div class="station-popup">' +
                 '<div class="popup-content">' +
-                '<h5>' + selected_feature.get('id') + '</h5>' +
+                '<h5>ID: ' + selected_feature.get('id') + '</h5>' +
                 '<h6>Location:</h6>' +
                 '<span>' + coordinates[0] + ', ' + coordinates[1] + '</span>' +
-                // '<h6>latitude:</h6>' +
-                // '<span>' + coordinates[0] + '</span>' +
-                // '<div id="plot-content"></div>' +
                 '<h6>Waterlevel</h6>' +
-                '<h5>' + selected_feature.get('waterlevel') + '</h5>' +
+                '<div id="plot-content"></div>' +
                 '</div>' +
                 '</div>';
 
@@ -50,6 +46,7 @@ $(function () {
                 popup.setPosition(coordinates);
                 popup_element.innerHTML = popup_content;
                 $(popup_element).popover('show');
+                $('#plot-content').load('/apps/threedidatacraft/plot/' + selected_feature.get('id') + '/ajax/');
 
                 const closer = document.getElementById('popup-closer');
                 // const download = document.getElementById('popup-export');

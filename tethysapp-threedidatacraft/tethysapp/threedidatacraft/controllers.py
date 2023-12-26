@@ -4,6 +4,8 @@ from tethys_sdk.routing import controller
 from tethys_sdk.gizmos import Button, MapView, MVView, MVLayer
 from django.contrib import messages
 from django.shortcuts import render, reverse, redirect
+from .helpers import create_plot
+
 from .model import process_boundary_data, process_netcdf_data, load_result
 
 @controller
@@ -63,11 +65,10 @@ def home(request):
 
                 pass
 
-    stations = []
+    # stations = []
     features = []
     lat_list = []
     lng_list = []
-
     stations = load_result()
 
     for station in stations:
@@ -187,3 +188,29 @@ def home(request):
     }
 
     return render(request, 'threedidatacraft/home.html', context)
+
+@controller(url='plot/{station_id}/ajax')
+def plot_ajax(request, station_id):
+    """
+    Controller for the Hydrograph Page.
+    """
+    stations = load_result()
+    station = None
+    # Get stations from database
+    for x in stations:
+        if x.id == int(station_id):
+            # print("i found it!")
+            station = x
+            break
+    else:
+        station = None
+
+    if station and station.waterlevel:
+        variables_plot = create_plot(station, height='250px')
+    else:
+        variables_plot = None
+
+    context = {
+        'variables_plot': variables_plot,
+    }
+    return render(request, 'threedidatacraft/plot_ajax.html', context)

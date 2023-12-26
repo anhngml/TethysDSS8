@@ -9,8 +9,8 @@
   }
   
   #popup {
-    width: 400px;
-    height: 225px;
+    width: 550px;
+    height: 265px;
     /* overflow-y: hidden; */
     /* overflow-x: hidden; */
   }
@@ -18,8 +18,8 @@
   .station-popup {
     overflow-y: hidden;
     overflow-x: hidden;
-    width: 390px;
-    height: 210px;
+    width: 540px;
+    height: 260px;
     /* padding-right: 17px; 
     box-sizing: content-box;  */
   }

@@ -7,7 +7,9 @@ from datetime import datetime
 import numpy as np
 import netCDF4 as nc
 from netCDF4 import Dataset
+import netCDF4
 from pyproj import Proj, transform
+import cftime
 
 def process_boundary_data(data_file,start_datetime=None,end_datetime=None):
   
@@ -75,17 +77,30 @@ def process_netcdf_data(data_file):
   xcc2d = ds["Mesh2DFace_xcc"][:]
   ycc2d = ds["Mesh2DFace_ycc"][:]
   s2d = ds["Mesh2D_s1"][:]
-  print(xcc2d.shape)
-  print(ycc2d.shape)
-  print(s2d.transpose().shape)
-  df = pd.DataFrame(data={ 'id': range(0, len(xcc2d)), 'x': xcc2d, 'y': ycc2d, 'WaterLevel': s2d.transpose().tolist() })
+  time = ds["time"][:]
+  units = ds.variables['time'].units
+  calendar = 'standard'
+  # times32 = netCDF4.num2date(time, units=units, calendar=calendar)
+  times32 = cftime.num2pydate(time, units=units, calendar=calendar)
+  times32 = list(map(lambda x: int(x.timestamp()), times32))
+
+  df = pd.DataFrame(data={ 'id': range(0, len(xcc2d)), 'x': xcc2d, 'y': ycc2d, 'time': np.zeros((len(xcc2d), len(times32))).tolist(), 'WaterLevel': s2d.transpose().tolist() })
+  crs_init = Proj('epsg:32648')
+  crs_wgs84 = Proj('epsg:4326')
+  for index, row in df.iterrows():
+    x, y = row['x'], row['y']
+    lat, lon = transform(crs_init, crs_wgs84, x, y)
+    df.at[index, 'x'] = lat
+    df.at[index, 'y'] = lon
+    df.at[index, 'time'] = times32
+
   df.to_csv('result.csv', index=False)
 
 def load_result():
   stations = []
   result_file = 'result.csv'
-  crs_init = Proj('epsg:32648')
-  crs_wgs84 = Proj('epsg:4326')
+  # crs_init = Proj('epsg:32648')
+  # crs_wgs84 = Proj('epsg:4326')
 
   if os.path.isfile(result_file):
     df = pd.read_csv('result.csv',skiprows=[1])
@@ -93,12 +108,11 @@ def load_result():
       station = lambda: None
       station.id = row['id']
       x, y = row['x'], row['y']
-      lat, lon = transform(crs_init, crs_wgs84, x, y)
-      # if index < 1:
-      #   print('lon, lat:', lon, lat)
-      station.latitude = lat # round(lat, 6)
-      station.longitude = lon # round(lon, 6)
-
+      # lat, lon = transform(crs_init, crs_wgs84, x, y)
+      station.latitude = x # round(lat, 6)
+      station.longitude = y # round(lon, 6)
+      station.time = row['time']
       station.waterlevel = row['WaterLevel']
+      
       stations.append(station)
   return stations
