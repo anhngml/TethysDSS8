@@ -5,6 +5,8 @@ from sqlalchemy import asc, desc
 from datetime import datetime
 import numpy as np
 from tethys_sdk.gizmos import TimeSeries
+from .model import load_result
+from sklearn.metrics import r2_score
 
 
 def create_plot(station, height='520px', width='100%'):
@@ -18,23 +20,40 @@ def create_plot(station, height='520px', width='100%'):
     level[level == -9999.0] = None
     time = station.time.replace('[', '').replace(']', '').split(',')
     time = list(map(lambda x: datetime.fromtimestamp(int(x)), time))
-    level_pred = []
+    obs_time = station.obs_time
+    obs_level = station.obs_value
+
+    if obs_time is not None and obs_level is not None:
+        obs_time = list(map(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'), obs_time))
+        # print(type(obs_time[0]))
+        uni_time = list(set(time).intersection(set(obs_time)))
+        # print(uni_time)
+        if len(uni_time) > 0:
+            min_time = min(uni_time)
+            max_time = max(uni_time)
+
+            sim_level_sel = level[time.index(min_time): time.index(max_time)]
+            obs_level_sel = obs_level[obs_time.index(min_time): obs_time.index(max_time)]
+            # print(sim_level_sel, obs_level_sel)
+            rmse = np.linalg.norm(sim_level_sel - obs_level_sel) / np.sqrt(len(obs_level_sel))
+            coefficient_of_dermination = r2_score(obs_level_sel, sim_level_sel)
 
     hydrograph_go = go.Scatter(
         x=time,
         y=level,
-        name='level',
+        name='sim',
         line={'color': '#0080ff', 'width': 5, 'shape': 'spline'},
     )
     hydrograph_pred_go = go.Scatter(
-        x=time,
-        y=level_pred,
-        name='pred',
+        x=obs_time,
+        y=obs_level,
+        name='obs',
         line={'color': 'red', 'width': 5, 'shape': 'spline'},
     )
-    data = [hydrograph_go]
+    data = [hydrograph_go, hydrograph_pred_go]
     layout = {
-        # 'title': 'Hydrograph for {0}'.format(station.name),
+        'title': 'Benchmark for {0}: RMSE={1}; R2={2}'.format(station.id, round(rmse, 2), round(coefficient_of_dermination, 2)) \
+        if station.obs_time is not None else '',
         'xaxis': {'title': 'Time (hr)'},
         'yaxis': {'title': 'Level (cm)'},
     }
@@ -79,3 +98,14 @@ def create_plot(station, height='520px', width='100%'):
     )
     # return timeseries_plot
     return variables_plot
+
+def create_benchmark(point_id):
+    try:
+        print(point_id)
+        stations = load_result()
+        station = next(x for x in stations if x.id == int(point_id))
+        return create_plot(station=station)
+    except Exception as e:
+        print('====')
+        print(str(e))
+        pass

@@ -96,6 +96,29 @@ def process_netcdf_data(data_file):
 
   df.to_csv(data_folder+'/result.csv', index=False)
 
+def process_obs_file(data_file, start_datetime, end_datetime, point_id):
+  data_folder = app.get_custom_setting(name="data_folder")
+  df = pd.read_csv(data_file)
+  
+  start_datetime = datetime.strptime(start_datetime, '%Y-%m-%dT%H:%M') if start_datetime is not None else None
+  end_datetime = datetime.strptime(end_datetime, '%Y-%m-%dT%H:%M') if end_datetime is not None else None
+
+  times = df.iloc[:,0].tolist()
+  if isinstance(times[0], str):
+    times = list(map(lambda x:datetime.strptime(x, app.get_custom_setting(name="datetime_format")),times))
+  
+  np_times = np.array(times)
+
+  print(start_datetime.month, end_datetime.month, np_times[0].month)
+
+  first_data_row = np.argmax(np_times >= start_datetime) if start_datetime is not None else 0
+  last_data_row = np.argmax(np_times > end_datetime) if end_datetime is not None else -1
+
+  times = times[first_data_row:last_data_row]
+  series = df.iloc[first_data_row: last_data_row, 1].tolist()
+  df = pd.DataFrame({ 'time': times, 'value': series })
+  df.to_csv(f'{data_folder}/obs_{point_id}.csv', index=False)
+
 def load_result():
   stations = []
   data_folder = app.get_custom_setting(name="data_folder")
@@ -108,6 +131,15 @@ def load_result():
       for index, row in df.iterrows():
         station = lambda: None
         station.id = row['id']
+        obs_file = f'{data_folder}/obs_{station.id}.csv'
+        if os.path.isfile(obs_file):
+          df = pd.read_csv(obs_file)
+          station.obs_time = df.iloc[:, 0].tolist()
+          station.obs_value = df.iloc[:, 1].tolist()
+        else:
+          station.obs_time = None
+          station.obs_value = None
+
         x, y = row['x'], row['y']
         # lat, lon = transform(crs_init, crs_wgs84, x, y)
         station.latitude = x # round(lat, 6)

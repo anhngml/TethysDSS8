@@ -1,0 +1,18 @@
+{% extends "threedidatacraft/base.html" %}
+{% load tethys_gizmos %}
+
+{% block app_navigation_items %}
+  {% url 'threedidatacraft:home' as home_url %}
+  <li class="nav-item title">App Navigation</li>
+  <li class="nav-item "><a class="nav-link" href="{{ home_url }}">Back</a></li>
+{% endblock %}
+
+{% block app_content %}
+  {% if benchmark_plot %}
+    {% gizmo benchmark_plot %}
+  {% endif %}
+{% endblock %}
+
+{% block app_actions %}
+  {% gizmo upload_obs_button %}
+{% endblock %}

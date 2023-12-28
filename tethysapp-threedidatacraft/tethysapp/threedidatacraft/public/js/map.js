@@ -32,7 +32,7 @@ $(function () {
                 '<h5>ID: ' + selected_feature.get('id') + '</h5>' +
                 '<h6>Location:</h6>' +
                 '<span>' + coordinates[0] + ', ' + coordinates[1] + '</span>' +
-                '<h6>Waterlevel</h6>' +
+                '<h6>Waterlevel <a href="'+'/apps/threedidatacraft/benchmark/' + selected_feature.get('id') + '" class="">Benchmark</a>' + '</h6>' +
                 '<div id="plot-content"></div>' +
                 '</div>' +
                 '</div>';

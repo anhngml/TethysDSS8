@@ -1,12 +1,12 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from tethys_sdk.routing import controller
-from tethys_sdk.gizmos import Button, MapView, MVView, MVLayer
+from tethys_sdk.gizmos import Button, MapView, MVView, MVLayer, DatePicker
 from django.contrib import messages
 from django.shortcuts import render, reverse, redirect
-from .helpers import create_plot
+from .helpers import create_plot, create_benchmark
 
-from .model import process_boundary_data, process_netcdf_data, load_result
+from .model import process_boundary_data, process_netcdf_data, load_result, process_obs_file
 
 @controller
 def home(request):
@@ -108,7 +108,7 @@ def home(request):
 
     style = {'ol.style.Style': {
         'image': {'ol.style.Circle': {
-            'radius': 5,
+            'radius': 3,
             'fill': {'ol.style.Fill': {
                 'color':  '#d84e1f'
             }},
@@ -138,7 +138,7 @@ def home(request):
         # projection='epsg:4326',
         # projection='EPSG:4326',
         center=view_center,
-        zoom=13,
+        zoom=14,
         maxZoom=28,
         minZoom=2
     )
@@ -188,6 +188,93 @@ def home(request):
     }
 
     return render(request, 'threedidatacraft/home.html', context)
+
+@controller(url='benchmark/{point_id}/obs')
+def upload_obs(request, point_id):
+    """
+    Controller for the Add Dam page.
+    """
+    # Default Values
+    from_datetime = request.POST['from_datetime'] if 'from_datetime' in request.POST else None
+    to_datetime = request.POST['to_datetime'] if 'to_datetime' in request.POST else None
+    hydrograph_file = None
+    # Errors
+    from_datetime_error = ''
+    to_datetime_error = ''
+    hydrograph_file_error = ''
+
+    # Handle form submission
+    if request.POST and 'upload-button' in request.POST:
+        # Get values
+        has_errors = False
+        from_datetime = request.POST.get('from_datetime', None)
+        to_datetime = request.POST.get('to_datetime', None)
+        # Get File
+        if request.FILES and 'sequence-file' in request.FILES:
+            # Get a list of the files
+            hydrograph_file = request.FILES.getlist('sequence-file')
+
+        if not hydrograph_file and len(hydrograph_file) > 0:
+            has_errors = True
+            hydrograph_file_error = 'Hydrograph File is Required.'
+
+        # Validate
+        # if not from_datetime:
+        #     has_errors = True
+        #     from_datetime_error = 'From date is required.'
+
+        # if not to_datetime:
+        #     has_errors = True
+        #     to_datetime_error = 'To date is required.'
+
+        if not has_errors:
+            process_obs_file(hydrograph_file[0], from_datetime, to_datetime, point_id)
+            return redirect(f'/apps/threedidatacraft/benchmark/{point_id}')
+
+        messages.error(request, "Please fix errors.")
+
+    upload_button = Button(
+        display_text='Upload',
+        name='upload-button',
+        icon='plus-square',
+        style='success',
+        attributes={'form': 'upload-obs-form'},
+        submit=True
+    )
+
+    cancel_button = Button(
+        display_text='Cancel',
+        name='cancel-button',
+        href='/apps/threedidatacraft/benchmark/'+point_id
+    )
+
+    context = {
+        # 'from_datetime_input': from_datetime_input,
+        # 'to_datetime_input': to_datetime_input,
+        'hydrograph_file_error': hydrograph_file_error,
+        'upload_button': upload_button,
+        'cancel_button': cancel_button,
+    }
+
+    return render(request, 'threedidatacraft/upload_obs.html', context)
+
+@controller(url='benchmark/{point_id}')
+def benchmark(request, point_id):
+    benchmark_plot = create_benchmark(point_id)
+
+    upload_obs_button = Button(
+        display_text='Upload obs',
+        name='upload-obs-button',
+        icon='plus-square',
+        style='success',
+        href='obs'
+    )
+
+    context = {
+        'benchmark_plot': benchmark_plot,
+        'upload_obs_button': upload_obs_button
+    }
+    return render(request, 'threedidatacraft/benchmark.html', context)
 
 @controller(url='plot/{station_id}/ajax')
 def plot_ajax(request, station_id):

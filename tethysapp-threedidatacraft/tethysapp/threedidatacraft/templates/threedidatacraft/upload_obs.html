@@ -1,0 +1,31 @@
+{% extends "threedidatacraft/base.html" %}
+{% load tethys_gizmos %}
+
+{% block app_content %}
+  <h1>Upload observed timeseries</h1>
+  <form id="upload-obs-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group{% if hydrograph_file_error %} has-error{% endif %}">
+      <label class="control-label">Observed series file</label>
+      <input type="file" name="sequence-file">
+      {% if hydrograph_file_error %}<p class="help-block">{{ hydrograph_file_error }}</p>{% endif %}
+    </div>
+    {% comment %} {% gizmo from_datetime_input %}
+    {% gizmo to_datetime_input %} {% endcomment %}
+          
+    <div>
+      <label for="start_datetime">Thời gian từ:</label><br>
+      <input type="datetime-local" id="from_datetime" name="from_datetime" value="2000-01-01T15:45">
+    </div>
+    <div>
+      <label for="start_datetime">Đến:</label><br>
+      <input type="datetime-local" id="to_datetime" name="to_datetime" value="2000-01-03T15:45">
+    </div>
+    
+  </form>
+{% endblock %}
+
+{% block app_actions %}
+  {% gizmo upload_button %}
+  {% gizmo cancel_button %}
+{% endblock %}
