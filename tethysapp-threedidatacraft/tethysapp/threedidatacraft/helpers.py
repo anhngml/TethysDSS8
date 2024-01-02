@@ -42,13 +42,13 @@ def create_plot(station, height='520px', width='100%'):
         x=time,
         y=level,
         name='sim',
-        line={'color': '#0080ff', 'width': 5, 'shape': 'spline'},
+        line={'color': '#0080ff', 'width': 1, 'shape': 'spline'},
     )
     hydrograph_pred_go = go.Scatter(
         x=obs_time,
         y=obs_level,
         name='obs',
-        line={'color': 'red', 'width': 5, 'shape': 'spline'},
+        line={'color': 'red', 'width': 1, 'shape': 'spline'},
     )
     data = [hydrograph_go, hydrograph_pred_go]
     layout = {
