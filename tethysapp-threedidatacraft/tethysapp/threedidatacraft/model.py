@@ -10,11 +10,12 @@ from netCDF4 import Dataset
 import netCDF4
 from pyproj import Proj, transform
 import cftime
+from scipy.interpolate import interp1d
 
 def process_boundary_data(data_file,start_datetime=None,end_datetime=None):
   
-  start_datetime = datetime.strptime(start_datetime, '%Y-%m-%dT%H:%M') if start_datetime is not None else None
-  end_datetime = datetime.strptime(end_datetime, '%Y-%m-%dT%H:%M') if end_datetime is not None else None
+  start_datetime = datetime.strptime(start_datetime, '%Y-%m-%dT%H:%M').replace(minute=0, second=0, microsecond=0) if start_datetime is not None else None
+  end_datetime = datetime.strptime(end_datetime, '%Y-%m-%dT%H:%M').replace(minute=0, second=0, microsecond=0) if end_datetime is not None else None
 
   points_sheet_name = app.get_custom_setting(name="points_sheet")
   boundary_type_map = app.get_custom_setting(name="boundary_type_map")
@@ -62,7 +63,55 @@ def process_boundary_data(data_file,start_datetime=None,end_datetime=None):
     series_col = station_array.index(station_name) if station_name in station_array else -1
 
     series = metric_sheet.iloc[first_data_row: last_data_row,series_col].tolist() if series_col>= 0 else []
-    series = "\n".join(map(lambda x:str(x),series))
+    # doan
+    
+    x = []
+    # x.append(0)
+    for i in range(len(series)):
+      tmp = int((times[first_data_row+i-2]-start_datetime).total_seconds())
+      x.append(tmp)
+    if len(series) == 0:
+      timeseries.append([])
+      continue
+    
+    
+    tmp = int((end_datetime-start_datetime).total_seconds())
+    step = 3600 
+
+    x_interp = np.linspace(0, tmp, int(tmp/step)+1)
+    y = np.full(int(tmp/step), None)
+    # y = np.array(y)
+
+    tt = 0
+    kt = 0
+    for i in range(len(x_interp)-1):
+      if x_interp[i] in x and not np.isnan(series[tt]):
+        # print("series[tt]",series[tt])
+        y[i] = series[tt]
+        tt += 1
+        kt = 1
+    if kt  == 0 :
+      timeseries.append([])
+      continue
+
+    # print(y)
+    # Find non-missing indices
+    non_nan_indices = np.where(np.array(y) != None)[0]
+
+    # Create an interpolation function
+    interp_func = interp1d([x_interp[i] for i in non_nan_indices], 
+                          [y[i] for i in non_nan_indices], 
+                          kind='linear', fill_value="extrapolate")
+
+    
+    y_interp = [val if val is not None else '{:.4f}'.format(float(interp_func(x_interp[i]))) for i, val in enumerate(y)]
+   
+    series_ = []
+    for i in range(len(y_interp)):
+      series_.append(str(int(x_interp[i]))+','+str(y_interp[i]))
+    #
+    series = "\n".join(map(lambda x:str(x),series_))
+
     timeseries.append(series)
   
   result["timeseries"]= timeseries
