@@ -67,13 +67,27 @@ def process_boundary_data(data_file,start_datetime=None,end_datetime=None):
     
     x = []
     # x.append(0)
+    kt_nan = 1
+    for i in range(len(series)):
+      if series[i] is not None and str(series[i])!='nan':
+        kt_nan = 0
+        break
     for i in range(len(series)):
       tmp = int((times[first_data_row+i-2]-start_datetime).total_seconds())
       x.append(tmp)
-    if len(series) == 0:
-      timeseries.append([])
+    if not series or kt_nan == 1:
+      tmp = int((end_datetime-start_datetime).total_seconds())
+      step = 3600 
+      x_interp = np.linspace(0, tmp, int(tmp/step)+1)
+      
+      series_ = []
+      for i in range(len(x_interp)):
+        series_.append(str(int(x_interp[i]))+','+str(0))
+      #
+      series = "\n".join(map(lambda x:str(x),series_))
+
+      timeseries.append(series)
       continue
-    
     
     tmp = int((end_datetime-start_datetime).total_seconds())
     step = 3600 

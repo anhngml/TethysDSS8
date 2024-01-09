@@ -32,7 +32,7 @@ def home(request):
 
             if not has_errors:
                 # Process file here
-                try:
+                # try:
                     start_datetime = request.POST['start_datetime'] if 'start_datetime' in request.POST else None
                     end_datetime = request.POST['end_datetime'] if 'end_datetime' in request.POST else None
 
@@ -45,8 +45,8 @@ def home(request):
                     else:
                         messages.info(request, 'Unable to process data. Please try again.')
                         return redirect(reverse('threedidatacraft:home'))
-                except:
-                    messages.error(request, "Unable to process data. Please try again.")
+                # except:
+                #     messages.error(request, "Unable to process data. Please try again.")
 
         elif 'upload-netcdf-button' in request.POST:
             has_errors = False
